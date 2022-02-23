@@ -39,7 +39,8 @@ module OmniContacts
       private
 
       def contacts_req_params
-        {'max-results' => @max_results.to_s, 'alt' => 'json'}
+        #{'max-results' => @max_results.to_s, 'alt' => 'json'}
+        { 'personFields' => 'emailAddresses' }
       end
 
       def contacts_req_headers token, token_type
