@@ -53,11 +53,9 @@ module OmniContacts
         Rails.logger.info("!@!@!@!@! RESPONSE JSON")
 
         Rails.logger.info(response)
-
-        return [] if response['feed'].nil? || response['feed']['entry'].nil?
         contacts = []
         return contacts if response.nil?
-        response['feed']['entry'].each do |entry|
+        response['connections'].each do |entry|
           # creating nil fields to keep the fields consistent across other networks
 
           contact = { :id => nil,
@@ -75,114 +73,12 @@ module OmniContacts
                       :company => nil,
                       :position => nil
           }
-          contact[:id] = entry['id']['$t'] if entry['id']
-          if entry['gd$name']
-            gd_name = entry['gd$name']
-            contact[:first_name] = normalize_name(entry['gd$name']['gd$givenName']['$t']) if gd_name['gd$givenName']
-            contact[:last_name] = normalize_name(entry['gd$name']['gd$familyName']['$t']) if gd_name['gd$familyName']
-            contact[:name] = normalize_name(entry['gd$name']['gd$fullName']['$t']) if gd_name['gd$fullName']
-            contact[:name] = full_name(contact[:first_name],contact[:last_name]) if contact[:name].nil?
-          end
-
-          contact[:emails] = []
-          entry['gd$email'].each do |email|
-            if email['rel']
-              split_index = email['rel'].index('#')
-              contact[:emails] << {:name => email['rel'][split_index + 1, email['rel'].length - 1], :email => email['address']}
-            elsif email['label']
-              contact[:emails] << {:name => email['label'], :email => email['address']}
-            end
-          end if entry['gd$email']
-
-          # Support older versions of the gem by keeping singular entries around
-          contact[:email] = contact[:emails][0][:email] if contact[:emails][0]
-          contact[:first_name], contact[:last_name], contact[:name] = email_to_name(contact[:name]) if !contact[:name].nil? && contact[:name].include?('@')
-          contact[:first_name], contact[:last_name], contact[:name] = email_to_name(contact[:emails][0][:email]) if (contact[:name].nil? && contact[:emails][0] && contact[:emails][0][:email])
-          #format - year-month-date
-          contact[:birthday] = birthday(entry['gContact$birthday']['when'])  if entry['gContact$birthday']
-
-          # value is either "male" or "female"
-          contact[:gender] = entry['gContact$gender']['value']  if entry['gContact$gender']
-
-          if entry['gContact$relation']
-            if entry['gContact$relation'].is_a?(Hash)
-              contact[:relation] = entry['gContact$relation']['rel']
-            elsif entry['gContact$relation'].is_a?(Array)
-              contact[:relation] = entry['gContact$relation'].first['rel']
-            end
-          end
-
-          contact[:addresses] = []
-          entry['gd$structuredPostalAddress'].each do |address|
-            if address['rel']
-              split_index = address['rel'].index('#')
-              new_address = {:name => address['rel'][split_index + 1, address['rel'].length - 1]}
-            elsif address['label']
-              new_address = {:name => address['label']}
-            end
-
-            new_address[:address_1] = address['gd$street']['$t'] if address['gd$street']
-            new_address[:address_1] = address['gd$formattedAddress']['$t'] if new_address[:address_1].nil? && address['gd$formattedAddress']
-            if !new_address[:address_1].nil? && new_address[:address_1].index("\n")
-              parts = new_address[:address_1].split("\n")
-              new_address[:address_1] = parts.first
-              # this may contain city/state/zip if user jammed it all into one string.... :-(
-              new_address[:address_2] = parts[1..-1].join(', ')
-            end
-            new_address[:city] = address['gd$city']['$t'] if address['gd$city']
-            new_address[:region] = address['gd$region']['$t'] if address['gd$region'] # like state or province
-            new_address[:country] = address['gd$country']['code'] if address['gd$country']
-            new_address[:postcode] = address['gd$postcode']['$t'] if address['gd$postcode']
-            contact[:addresses] << new_address
-          end if entry['gd$structuredPostalAddress']
-
-          # Support older versions of the gem by keeping singular entries around
-          if contact[:addresses][0]
-            contact[:address_1] = contact[:addresses][0][:address_1]
-            contact[:address_2] = contact[:addresses][0][:address_2]
-            contact[:city] = contact[:addresses][0][:city]
-            contact[:region] = contact[:addresses][0][:region]
-            contact[:country] = contact[:addresses][0][:country]
-            contact[:postcode] = contact[:addresses][0][:postcode]
-          end
-
-          contact[:phone_numbers] = []
-          entry['gd$phoneNumber'].each do |phone_number|
-            if phone_number['rel']
-              split_index = phone_number['rel'].index('#')
-              contact[:phone_numbers] << {:name => phone_number['rel'][split_index + 1, phone_number['rel'].length - 1], :number => phone_number['$t']}
-            elsif phone_number['label']
-              contact[:phone_numbers] << {:name => phone_number['label'], :number => phone_number['$t']}
-            end
-          end if entry['gd$phoneNumber']
-
-          # Support older versions of the gem by keeping singular entries around
-          contact[:phone_number] = contact[:phone_numbers][0][:number] if contact[:phone_numbers][0]
-
-          if entry["link"] && entry["link"].is_a?(Array)
-            entry["link"].each do |link|
-              if link["type"] == 'image/*' && link["gd$etag"]
-                contact[:profile_picture] = link["href"] + "?&access_token=" + access_token
-                break
-              end
-            end
-          end
-
-          if entry['gContact$event']
-            contact[:dates] = []
-            entry['gContact$event'].each do |event|
-              if event['rel']
-                contact[:dates] << {:name => event['rel'], :date => birthday(event['gd$when']['startTime'])}
-              elsif event['label']
-                contact[:dates] << {:name => event['label'], :date => birthday(event['gd$when']['startTime'])}
-              end
-            end
-          end
-
-          if entry['gd$organization']
-            contact[:company] = entry['gd$organization'][0]['gd$orgName']['$t'] if entry['gd$organization'][0]['gd$orgName']
-            contact[:position] = entry['gd$organization'][0]['gd$orgTitle']['$t'] if entry['gd$organization'][0]['gd$orgTitle']
-          end
+          contact[:id] = entry['names'][0]['metadata']['source']['id'] if entry['names']
+          contact[:first_name] = entry['names'][0]['givenName'] if entry['names'][0]['givenName']
+          contact[:last_name] = entry['names'][0]['familyName'] if entry['names'][0]['familyName']
+          contact[:name] = full_name(contact[:first_name],contact[:last_name])
+          contact[:email] = entry['emailAddresses'][0]['value'] if entry['emailAddresses']
+          contact[:first_name], contact[:last_name], contact[:name] = email_to_name(contact[:email]) if (contact[:name].nil? && contact[:email])
 
           contacts << contact if contact[:name]
         end
