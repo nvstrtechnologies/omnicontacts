@@ -32,6 +32,8 @@ module OmniContacts
       def fetch_current_user access_token, token_type
         Rails.logger.info("!@!@!@!@! TESTING LOGGER in fetch_current_user")
         self_response = https_get(@self_host, @profile_path, contacts_req_params, contacts_req_headers(access_token, token_type))
+        Rails.logger.info("!@!@!@!@! SELF RESPONSE JSON")
+        Rails.logger.info(self_response)
         user = current_user(self_response, access_token, token_type)
         set_current_user user
       end
