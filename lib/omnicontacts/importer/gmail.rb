@@ -42,7 +42,7 @@ module OmniContacts
 
       def contacts_req_params
         #{'max-results' => @max_results.to_s, 'alt' => 'json'}
-        { 'personFields' => 'names, emailAddresses' }
+        { 'personFields' => 'names', 'emailAddresses' }
       end
 
       def contacts_req_headers token, token_type
