@@ -80,7 +80,7 @@ module OmniContacts
           contact[:email] = entry['emailAddresses'][0]['value'] if entry['emailAddresses']
           contact[:first_name], contact[:last_name], contact[:name] = email_to_name(contact[:email]) if (contact[:name].nil? && contact[:email])
 
-          contacts << contact if contact[:name]
+          contacts << contact if contact[:email]
         end
         contacts.uniq! {|c| c[:email] || c[:profile_picture] || c[:name]}
         contacts
