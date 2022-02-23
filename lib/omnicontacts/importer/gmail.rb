@@ -15,14 +15,11 @@ module OmniContacts
         @auth_token_path = "/o/oauth2/token"
         @scope = (args[3] && args[3][:scope]) || "https://www.googleapis.com/auth/contacts.readonly https://www.googleapis.com/auth/userinfo#email https://www.googleapis.com/auth/userinfo.profile"
         @contacts_host = "people.googleapis.com" #"www.google.com" https:///v1/{resourceName=people/*}/connections
-        @contacts_path = "/v1/people/connections" #"/m8/feeds/contacts/default/full"
-        @max_results =  (args[3] && args[3][:max_results]) || 100
-        @self_host = "www.googleapis.com"
+        @contacts_path = "/v1/people/me/connections" #"/m8/feeds/contacts/default/full"
+        @max_results = (args[3] && args[3][:max_results]) || 100
+        @self_host = "people.googleapis.com" #"www.googleapis.com"
         @profile_path = "/v1/people/me" #"/oauth2/v3/userinfo"
       end
-
-
-      #"https://www.google.com/m8/feeds" -> "https://www.googleapis.com/auth/contacts"
 
       def fetch_contacts_using_access_token access_token, token_type
         Rails.logger.info("!@!@!@!@! TESTING LOGGER in fetch_contacts_using_access_token")
