@@ -22,15 +22,12 @@ module OmniContacts
       end
 
       def fetch_contacts_using_access_token access_token, token_type
-        Rails.logger.info("!@!@!@!@! TESTING LOGGER in fetch_contacts_using_access_token")
-
         fetch_current_user(access_token, token_type)
         contacts_response = https_get(@contacts_host, @contacts_path, contacts_req_params, contacts_req_headers(access_token, token_type))
         contacts_from_response(contacts_response, access_token)
       end
 
       def fetch_current_user access_token, token_type
-        Rails.logger.info("!@!@!@!@! TESTING LOGGER in fetch_current_user")
         self_response = https_get(@self_host, @profile_path, contacts_req_params, contacts_req_headers(access_token, token_type))
         user = current_user(self_response, access_token, token_type)
         set_current_user user
@@ -49,10 +46,6 @@ module OmniContacts
 
       def contacts_from_response(response_as_json, access_token)
         response = JSON.parse(response_as_json)
-
-        Rails.logger.info("!@!@!@!@! RESPONSE JSON")
-
-        Rails.logger.info(response)
         contacts = []
         return contacts if response.nil?
         response['connections'].each do |entry|
