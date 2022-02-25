@@ -46,6 +46,8 @@ module OmniContacts
 
       def contacts_from_response(response_as_json, access_token)
         response = JSON.parse(response_as_json)
+        Rails.logger.info("!@!@!@!@! RESPONSE JSON")
+        Rails.logger.info(response)
         contacts = []
         return contacts if response.nil?
         response['connections'].each do |entry|
