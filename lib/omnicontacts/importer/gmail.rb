@@ -49,7 +49,7 @@ module OmniContacts
         Rails.logger.info("!@!@!@!@! RESPONSE JSON")
         Rails.logger.info(response)
         contacts = []
-        return contacts if response.nil?
+        return contacts if response.blank?
         response['connections'].each do |entry|
           # creating nil fields to keep the fields consistent across other networks
 
@@ -68,7 +68,8 @@ module OmniContacts
                       :company => nil,
                       :position => nil
           }
-          contact[:id] = entry['names'][0]['metadata']['source']['id'] if entry['names']
+          next if entry['names'].blank?
+          contact[:id] = entry['names'][0]['metadata']['source']['id']
           contact[:first_name] = entry['names'][0]['givenName'] if entry['names'][0]['givenName']
           contact[:last_name] = entry['names'][0]['familyName'] if entry['names'][0]['familyName']
           contact[:name] = full_name(contact[:first_name],contact[:last_name])
