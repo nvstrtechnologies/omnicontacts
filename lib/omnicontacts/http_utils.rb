@@ -61,7 +61,6 @@ module OmniContacts
     # It raises a RuntimeError if the response code is not equal to 200
     def http_get host, path, params
       connection = Net::HTTP.new(host)
-      Rails.logger.info("!@!@!@!@! SAI SAI #{path + "?" + to_query_string(params)}")
       process_http_response connection.request_get(path + "?" + to_query_string(params))
     end
 
@@ -76,6 +75,7 @@ module OmniContacts
     # Executes an HTTP GET request over SSL
     # It raises a RuntimeError if the response code is not equal to 200
     def https_get host, path, params, headers = nil
+      Rails.logger.info("!@!@!@!@! SAI SAI #{path + "?" + to_query_string(params)}")
       https_connection host do |connection|
         connection.request_get(path + "?" + to_query_string(params), headers)
       end
