@@ -23,7 +23,7 @@ module OmniContacts
 
       def fetch_contacts_using_access_token access_token, token_type
         fetch_current_user(access_token, token_type)
-        contacts_response = https_get(@contacts_host, @contacts_path, contacts_req_params, contacts_req_headers(access_token, token_type))
+        contacts_response = https_get(@contacts_host, @contacts_path, ps_contacts_req_params, contacts_req_headers(access_token, token_type))
         contacts_from_response(contacts_response, access_token)
       end
 
@@ -37,6 +37,10 @@ module OmniContacts
 
       def contacts_req_params
         { 'personFields' => 'names,emailAddresses' }
+      end
+
+      def ps_contacts_req_params
+        { 'pageSize' => 2, 'personFields' => 'names,emailAddresses' }
       end
 
       def contacts_req_headers token, token_type
