@@ -36,7 +36,7 @@ module OmniContacts
       private
 
       def contacts_req_params
-        { 'pageSize' => 2, 'personFields' => 'names,emailAddresses' }
+        { 'personFields' => 'names,emailAddresses' }
       end
 
       def contacts_req_headers token, token_type
