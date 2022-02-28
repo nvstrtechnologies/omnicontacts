@@ -16,14 +16,13 @@ module OmniContacts
         @scope = (args[3] && args[3][:scope]) || "https://www.googleapis.com/auth/contacts.readonly https://www.googleapis.com/auth/userinfo#email https://www.googleapis.com/auth/userinfo.profile"
         @contacts_host = "people.googleapis.com" #"www.google.com" https:///v1/{resourceName=people/*}/connections
         @contacts_path = "/v1/people/me/connections" #"/m8/feeds/contacts/default/full"
-        @max_results = (args[3] && args[3][:max_results]) || 100
         @self_host = "people.googleapis.com" #"www.googleapis.com"
         @profile_path = "/v1/people/me" #"/oauth2/v3/userinfo"
       end
 
       def fetch_contacts_using_access_token access_token, token_type
         fetch_current_user(access_token, token_type)
-        contacts_response = https_get(@contacts_host, @contacts_path, contacts_req_params, contacts_req_headers(access_token, token_type))
+        contacts_response = https_get(@contacts_host, @contacts_path, contacts_req_params_with_page_size, contacts_req_headers(access_token, token_type))
         contacts_from_response(contacts_response, access_token)
       end
 
@@ -36,8 +35,11 @@ module OmniContacts
       private
 
       def contacts_req_params
-        #{'max-results' => @max_results.to_s, 'alt' => 'json'}
         { 'personFields' => 'names,emailAddresses' }
+      end
+
+      def contacts_req_params_with_page_size
+        { 'pageSize' => 1000, 'personFields' => 'names,emailAddresses' }
       end
 
       def contacts_req_headers token, token_type
